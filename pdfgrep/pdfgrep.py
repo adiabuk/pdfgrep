@@ -24,7 +24,7 @@ import sys
 
 from glob import glob
 import argcomplete
-import PyPDF2
+import pdftotext
 
 APP_NAME = sys.argv[0].split('/')[-1]
 
@@ -93,26 +93,22 @@ def do_grep(filename, grep, **kwargs):
         return
 
     try:
-        read_pdf = PyPDF2.PdfFileReader(pdf_file)
+        read_pdf = pdftotext.PDF(pdf_file)
+
         # This will happen if file is malformed, or not a PDF
-    except (PyPDF2.utils.PdfReadError, IOError):
+    except (pdftotext.Error, IOError):
         sys.stderr.write("{0}: Unable to read file: {1}\n "
                          .format(APP_NAME, filename))
         return
 
-    pages = []
-
-    for page_num in range(0, read_pdf.getNumPages()):
+    for page_num in range(0, len(read_pdf)):
         # attempt to read pages and split lines approprietly
-        page = read_pdf.getPage(page_num)
-        page_content = page.extractText() + '\n'
-        page_content = " ".join(page_content.replace(u"\xa0", " ")
-                                .strip().split())
-        pages.append(page_content.encode("ascii", "xmlcharrefreplace"))
+        page = read_pdf[page_num]
+        page_content = page.split('\n')
 
         # iterate through pages
-        for line_num, line in enumerate(pages):
-            line = line.decode('utf-8')
+        for line_num, line in enumerate(page_content):
+            line = line.encode('utf-8')
             if re.search(grep, line, re.IGNORECASE):
                 if kwargs['list_files']:
                     # only print file names - return after first match found
@@ -129,7 +125,7 @@ def do_grep(filename, grep, **kwargs):
                     text = re.compile(re.escape(grep), re.IGNORECASE)
                     line = text.sub(red + grep + end, line)
 
-                yield "{0}: {1} {2}".format(filename, beg, line)
+                yield "{0}: {1} {2}".format(filename, beg, line.strip())
 
 if __name__ == '__main__':
     main()
