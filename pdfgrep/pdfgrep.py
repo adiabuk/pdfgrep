@@ -57,9 +57,11 @@ def main():
     if not args.filenames:
         args.filenames = sorted(glob('*'))
     for filename in args.filenames:
-        do_grep(filename, args.grep, ignore_case=args.ignore_case,
-                num=args.num, list_files=args.list_files,
-                recursive=args.recursive, color=args.color)
+        for output in \
+            do_grep(filename, args.grep, ignore_case=args.ignore_case,
+                    num=args.num, list_files=args.list_files,
+                    recursive=args.recursive, color=args.color):
+            print(output)
 
 def do_grep(filename, grep, **kwargs):
     """ Perform the pattern matching in given files """
@@ -114,7 +116,7 @@ def do_grep(filename, grep, **kwargs):
             if re.search(grep, line, re.IGNORECASE):
                 if kwargs['list_files']:
                     # only print file names - return after first match found
-                    print(filename)
+                    yield filename
                     return
                 # add page and line numbers if num flag set
                 beg = ("page:{0}, line:{1}"
@@ -127,7 +129,7 @@ def do_grep(filename, grep, **kwargs):
                     text = re.compile(re.escape(grep), re.IGNORECASE)
                     line = text.sub(red + grep + end, line)
 
-                print("{0}: {1} {2}".format(filename, beg, line))
+                yield "{0}: {1} {2}".format(filename, beg, line)
 
 if __name__ == '__main__':
     main()
