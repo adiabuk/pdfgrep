@@ -22,7 +22,7 @@ setup(
                   .format(VER)),
     keywords=['pdf', 'grep'],
     install_requires=REQS,
-    entry_points={'console_scripts':['pypdf=pdfgrep.pdfgrep:main']},
+    entry_points={'console_scripts':['pdfgrep=pdfgrep.pdfgrep:main']},
     test_suite='tests.test_pdfgrep',
     classifiers=[],
 )
