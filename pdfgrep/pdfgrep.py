@@ -24,7 +24,9 @@ import sys
 
 from glob import glob
 import argcomplete
+import magic
 import pdftotext
+
 
 APP_NAME = sys.argv[0].split('/')[-1]
 
@@ -75,14 +77,26 @@ def do_grep(filename, grep, **kwargs):
     # recurse through directory structure if filename is a dir
     if os.path.isdir(filename) and kwargs['recursive'] is True:
         for r_file in glob(filename + '/*'):
-            do_grep(r_file, grep, ignore_case=kwargs['ignore_case'],
-                    list_files=kwargs['list_files'],
-                    num=kwargs['num'], recursive=kwargs['recursive'],
-                    color=kwargs['color'])
+            for output in \
+                do_grep(r_file, grep, ignore_case=kwargs['ignore_case'],
+                        list_files=kwargs['list_files'],
+                        num=kwargs['num'], recursive=kwargs['recursive'],
+                        color=kwargs['color']):
+
+                print(output)
         return
 
     elif os.path.isdir(filename) and kwargs['recursive'] is False:
         # ignore directory and return if recursive flag is not set
+        return
+    elif not os.path.isfile(filename):
+        sys.stderr.write("{0}: {1}: No such file or directory\n"
+                         .format(APP_NAME, filename))
+        return
+
+    elif magic.from_file(filename, mime=True) != 'application/pdf':
+        sys.stderr.write("{0}: Not a pdf file: {1}\n "
+                         .format(APP_NAME, filename))
         return
 
     try:
@@ -99,6 +113,8 @@ def do_grep(filename, grep, **kwargs):
     except (pdftotext.Error, IOError):
         sys.stderr.write("{0}: Unable to read file: {1}\n "
                          .format(APP_NAME, filename))
+        return
+    except KeyboardInterrupt:
         return
 
     for page_num in range(0, len(read_pdf)):
