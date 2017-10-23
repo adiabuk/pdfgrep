@@ -1,26 +1,38 @@
+---
 language: python
+
 python:
   - "2.7"
   - "3.2"
   - "3.3"
   - "3.4"
   - "3.5"
-  - "3.5-dev" # 3.5 development branch
+  - "3.5-dev"  # 3.5 development branch
   - "3.6"
-  - "3.6-dev" # 3.6 development branch
-  - "3.7-dev" # 3.7 development branch
+  - "3.6-dev"  # 3.6 development branch
+  - "3.7-dev"  # 3.7 development branch
   - "nightly"
+
 env:
-   - CPPFLAGS=--coverage
+  - CPPFLAGS=--coverage
+  - CC_TEST_REPORTER_ID=787a2f89b15c637323c7340d65ec17e898ac44480706b4b4122ea040c2a88f1d
 
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libpoppler-cpp-dev pkg-config
   - pip install cpp-coveralls
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 
-# command to install dependencies
 install:
+  # command to install dependencies
   - pip install -r requirements.txt
-# command to run tests
+
 script:
+  # command to run tests
   ./setup.py test
+
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
