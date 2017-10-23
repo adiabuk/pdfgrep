@@ -124,7 +124,7 @@ def do_grep(filename, grep, **kwargs):
 
         # iterate through pages
         for line_num, line in enumerate(page_content):
-            line = line.encode('utf-8')
+            line = str(line.encode('utf-8'))
             if re.search(grep, line, re.IGNORECASE):
                 if kwargs['list_files']:
                     # only print file names - return after first match found
