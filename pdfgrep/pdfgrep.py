@@ -24,8 +24,8 @@ import sys
 
 from glob import glob
 import argcomplete
-import magic
 import pdftotext
+import magic
 
 
 APP_NAME = sys.argv[0].split('/')[-1]
@@ -59,11 +59,14 @@ def main():
     if not args.filenames:
         args.filenames = sorted(glob('*'))
     for filename in args.filenames:
-        for output in \
-            do_grep(filename, args.grep, ignore_case=args.ignore_case,
-                    num=args.num, list_files=args.list_files,
-                    recursive=args.recursive, color=args.color):
-            print(output)
+        try:
+            for output in \
+                do_grep(filename, args.grep, ignore_case=args.ignore_case,
+                        num=args.num, list_files=args.list_files,
+                        recursive=args.recursive, color=args.color):
+                print(output)
+        except KeyboardInterrupt:
+            sys.exit(1)
 
 def do_grep(filename, grep, **kwargs):
     """ Perform the pattern matching in given files """
@@ -114,10 +117,8 @@ def do_grep(filename, grep, **kwargs):
         sys.stderr.write("{0}: Unable to read file: {1}\n "
                          .format(APP_NAME, filename))
         return
-    except KeyboardInterrupt:
-        return
 
-    for page_num in range(0, len(read_pdf)):
+    for page_num, _ in enumerate(read_pdf):
         # attempt to read pages and split lines approprietly
         page = read_pdf[page_num]
         page_content = page.split('\n')
