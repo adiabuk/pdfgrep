@@ -8,7 +8,7 @@ from setuptools import setup
 
 with open('requirements.txt', 'r') as reqs_file:
     REQS = reqs_file.readlines()
-VER = '0.10'
+VER = '0.11'
 
 setup(
     name='pdfgrep',
