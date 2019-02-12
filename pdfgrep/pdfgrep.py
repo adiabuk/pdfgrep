@@ -37,6 +37,9 @@ def main():
     """
 
     parser = argparse.ArgumentParser('grep pdf files')
+    parser.add_argument('-e', '--suppress-errors', required=False,
+                        action='store_true', default=False,
+                        help='suppress error messages')
     parser.add_argument('-i', '--ignore-case', required=False,
                         action='store_true', default=False,
                         help='ignore case')
@@ -63,7 +66,8 @@ def main():
             for output in \
                 do_grep(filename, args.grep, ignore_case=args.ignore_case,
                         num=args.num, list_files=args.list_files,
-                        recursive=args.recursive, color=args.color):
+                        recursive=args.recursive, color=args.color,
+                        suppress_errors=args.suppress_errors):
                 print(output)
         except KeyboardInterrupt:
             sys.exit(1)
@@ -71,8 +75,13 @@ def main():
 def do_grep(filename, grep, **kwargs):
     """ Perform the pattern matching in given files """
 
-    for arg in ['ignore_case', 'list_files', 'num', 'recursive', 'color']:
+    for arg in ['ignore_case', 'list_files', 'num', 'recursive', 'color', 'suppress_errors']:
         kwargs.setdefault(arg, False)
+
+    def write_error(message):
+        """Print given message to stderr if not suppressed"""
+        if not kwargs['suppress_errors']:
+            sys.stderr.write(message)
 
     # set ignore case flag
     re.IGNORECASE = 0 if not kwargs['ignore_case'] else 2
@@ -84,7 +93,7 @@ def do_grep(filename, grep, **kwargs):
                 do_grep(r_file, grep, ignore_case=kwargs['ignore_case'],
                         list_files=kwargs['list_files'],
                         num=kwargs['num'], recursive=kwargs['recursive'],
-                        color=kwargs['color']):
+                        color=kwargs['color'], suppress_errors=kwargs['suppress_errors']):
 
                 print(output)
         return
@@ -93,20 +102,20 @@ def do_grep(filename, grep, **kwargs):
         # ignore directory and return if recursive flag is not set
         return
     elif not os.path.isfile(filename):
-        sys.stderr.write("{0}: {1}: No such file or directory\n"
-                         .format(APP_NAME, filename))
+        write_error("{0}: {1}: No such file or directory\n"
+                    .format(APP_NAME, filename))
         return
 
     elif magic.from_file(filename, mime=True) != 'application/pdf':
-        sys.stderr.write("{0}: Not a pdf file: {1}\n "
-                         .format(APP_NAME, filename))
+        write_error("{0}: Not a pdf file: {1}\n "
+                    .format(APP_NAME, filename))
         return
 
     try:
         pdf_file = open(filename, 'rb')
     except IOError:
-        sys.stderr.write("{0}: {1}: No such file or directory\n"
-                         .format(APP_NAME, filename))
+        write_error("{0}: {1}: No such file or directory\n"
+                    .format(APP_NAME, filename))
         return
 
     try:
@@ -114,8 +123,8 @@ def do_grep(filename, grep, **kwargs):
 
         # This will happen if file is malformed, or not a PDF
     except (pdftotext.Error, IOError):
-        sys.stderr.write("{0}: Unable to read file: {1}\n "
-                         .format(APP_NAME, filename))
+        write_error("{0}: Unable to read file: {1}\n "
+                    .format(APP_NAME, filename))
         return
 
     for page_num, _ in enumerate(read_pdf):
