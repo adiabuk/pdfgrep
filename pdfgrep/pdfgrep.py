@@ -37,7 +37,7 @@ def main():
     """
 
     parser = argparse.ArgumentParser('grep pdf files')
-    parser.add_argument('-e', '--suppress-errors', required=False,
+    parser.add_argument('-q', '--quiet', required=False,
                         action='store_true', default=False,
                         help='suppress error messages')
     parser.add_argument('-i', '--ignore-case', required=False,
@@ -49,7 +49,7 @@ def main():
     parser.add_argument('-l', '--list-files', required=False,
                         action='store_true', default=False,
                         help='list files matching pattern')
-    parser.add_argument('--color', '--colour', required=False,
+    parser.add_argument('-c', '--colour', '--color', required=False, dest='color',
                         action='store_true', help='color the matched string')
     parser.add_argument('-n', '--num', required=False,
                         action='store_true', default=False,
