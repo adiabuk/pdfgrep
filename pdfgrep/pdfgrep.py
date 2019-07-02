@@ -67,7 +67,7 @@ def main():
                 do_grep(filename, args.grep, ignore_case=args.ignore_case,
                         num=args.num, list_files=args.list_files,
                         recursive=args.recursive, color=args.color,
-                        suppress_errors=args.suppress_errors):
+                        suppress_errors=args.quiet):
                 print(output)
         except KeyboardInterrupt:
             sys.exit(1)
